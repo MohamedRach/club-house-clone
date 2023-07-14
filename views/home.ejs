@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <button id="button">Add</button>
+    <button id="button2">send message</button>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io()
+        const rtcObejt = {
+            lc: "haha",
+            answer: true
+        }
+        const add = document.getElementById("button")
+        const msg = document.getElementById("button2")
+        const lc = new RTCPeerConnection()
+        const dc = lc.createDataChannel("channel")
+        dc.onmessage = (e) => console.log("just got a message: " + e.data)
+        dc.onopen = () => console.log("connection opened")
+        lc.createOffer().then((o) => lc.setLocalDescription(o)).then(() => console.log("set succesfully: " + JSON.stringify(lc.localDescription)))
+        add.addEventListener('click', () => {
+            socket.emit("offer", lc.localDescription)
+        })
+        socket.on("answer", function(answer){
+            lc.setRemoteDescription(new RTCSessionDescription(answer))
+        })
+        msg.addEventListener('click', () => {
+            dc.send("wata fin")
+        })
+        
+    </script>
+</body>
+</html>

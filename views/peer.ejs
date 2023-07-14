@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Hello world</h1>
+    <button id="button">hello</button>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io()
+        var connection = false
+        const button = document.getElementById("button")
+        socket.on("offer", function(offer) {
+          
+                //console.log(offer)
+                const rc = new RTCPeerConnection()
+                //rc.onicecandidate = (e) => console.log("new ice candidate " + JSON.stringify(rc.localDescription))
+                rc.ondatachannel = (e) => {
+                    rc.dc = e.channel
+                    rc.dc.onmessage = (e)  => console.log("new message: " + e.data)
+                    rc.dc.onopen = () => console.log("connection opened")
+                    button.addEventListener('click', () => {
+                        rc.dc.send("kolchi bikhir")
+                    })
+                }
+                rc.setRemoteDescription(offer).then(e => console.log("offer set"))
+                rc.createAnswer().then(a => rc.setLocalDescription(a)).then(e => {
+                    console.log("answer created: " + JSON.stringify(rc.localDescription))
+                    socket.emit("answer", rc.localDescription)
+                    socket.emit("answer2", rc.localDescription)
+                    connection = true
+                })
+            
+            
+            
+        })
+    </script>
+</body>
+</html>
