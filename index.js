@@ -15,8 +15,13 @@ app.get("/", (req, res) => {
 app.get("/peer", (req, res) => {
     res.render("peer")
 })
+app.get("/secondpeer", (req, res) => {
+    res.render("second_peer")
+})
 
-
+app.get("/server", (req,res) => {
+    res.render("server")
+})
 io.on('connection', (socket) => {
     console.log('a user connected', socket.id);
     socket.on('disconnect', () => {

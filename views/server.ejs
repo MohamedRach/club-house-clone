@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Hello world</h1>
+    <button id="button">hello</button>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io()
+        var connections = []
+        var message = "";
+        const button = document.getElementById("button")
+        socket.on("offer", function(offer) {
+                const connectionObject = new Object()
+                connectionObject.id = Math.floor( Math.random() * 10 ) 
+                console.log(connectionObject.id)
+                connectionObject.setConnection = false
+                connections.push(connectionObject)
+                connections.forEach((connection) => {
+                    if(connection.setConnection === false){
+                        const rc = new RTCPeerConnection()
+                        connection.remoteCon = rc
+                        //rc.onicecandidate = (e) => console.log("new ice candidate " + JSON.stringify(rc.localDescription))
+                        rc.ondatachannel = (e) => {
+                            rc.dc = e.channel
+                            rc.dc.onmessage = (e)  => {
+                                connections.forEach((conn) => {
+                                    if(conn.id != connection.id){
+                                        conn.remoteCon.dc.send(e.data)
+                                    }
+                                })
+                            }
+                            rc.dc.onopen = () => console.log("connection opened")
+                            button.addEventListener('click', () => {
+                                connections.forEach((conn) => {
+                                    if(conn.id != connection.id){
+                                        conn.remoteCon.dc.send(message)
+                                    }
+                                })
+                                
+                            })
+                        }
+                        rc.setRemoteDescription(offer).then(e => console.log("offer set"))
+                        rc.createAnswer().then(a => rc.setLocalDescription(a)).then(e => {
+                            console.log("answer created: " + JSON.stringify(rc.localDescription))
+                            socket.emit("answer", rc.localDescription)
+                            connection.setConnection = true;
+                        })
+                        
+                    }
+                    
+                })
+                //console.log(offer)
+                
+            
+            
+            
+        })
+    </script>
+</body>
+</html>

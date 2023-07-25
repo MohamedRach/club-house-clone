@@ -11,10 +11,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         var socket = io()
-        const rtcObejt = {
-            lc: "haha",
-            answer: true
-        }
+        let connection = false
         const add = document.getElementById("button")
         const msg = document.getElementById("button2")
         const lc = new RTCPeerConnection()
@@ -26,7 +23,11 @@
             socket.emit("offer", lc.localDescription)
         })
         socket.on("answer", function(answer){
-            lc.setRemoteDescription(new RTCSessionDescription(answer))
+            if(!connection){
+                lc.setRemoteDescription(new RTCSessionDescription(answer))
+                connection = true
+            }
+            
         })
         msg.addEventListener('click', () => {
             dc.send("wata fin")
